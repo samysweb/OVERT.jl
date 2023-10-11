@@ -70,7 +70,7 @@ function overapprox(expr,
         return bound
     elseif is_number(expr)
         @debug("is number base case")
-        bound.output = eval(expr)
+        bound.output = Core.eval(Main,expr)
         return bound
         ### This code below preserves an exact numeric expression but adds variables
         # bound.output = add_var(bound)
@@ -337,7 +337,7 @@ Bound one argument unary functions like sin(x). Create upper and lower bounds of
 """
 function bound_unary_function(f::Symbol, x_bound::OverApproximation; plotflag=plotflag)
     @debug "bound true unary" f x_bound.output
-    fun = eval(:($f))
+    fun = Core.eval(Main,:($f))
     lb, ub, npoint = x_bound.output_range[1], x_bound.output_range[2], x_bound.N
     f_x_expr = :($(f)($(x_bound.output)))
     d2f_zeros, convex = get_regions_unary(f, lb, ub)

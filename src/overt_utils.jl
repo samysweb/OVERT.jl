@@ -161,7 +161,7 @@ end
 function rewrite_division_by_const(expr::Expr)
     if expr.args[1] == :/ && !is_number(expr.args[2]) && is_number(expr.args[3])
         if EVAL_CONSTS
-            c = eval(1/expr.args[3])
+            c = Core.eval(Main,1/expr.args[3])
             return :($c * $(expr.args[2]))
         else
             return :( (1/$(expr.args[3])) * $(expr.args[2]) )
@@ -247,7 +247,7 @@ function division_d2f_regions(e, arg, a, b)
     c = e.args[2] 
     @assert is_number(c)
     @assert (a <= b)
-    if eval(c) > 0
+    if Core.eval(Main,c) > 0
         if a > 0
             d2f_zeros, convex = [], true
         elseif b < 0
@@ -269,7 +269,7 @@ end
 
 function exponent_d2f_regions(e, arg, a, b)
     if is_number(e.args[2]) # c^x 
-        @assert eval(e.args[2]) > 0 # only real valued over real arguments for c > 0
+        @assert Core.eval(Main,e.args[2]) > 0 # only real valued over real arguments for c > 0
         d2f_zeros, convex = [], true
     elseif is_number(e.args[3]) # x^c (polynomials)
         x = e.args[2]
@@ -391,7 +391,7 @@ function find_affine_range(expr, range_dict)
     @debug "$expr is affine"
 
     @debug "testing if $expr can be eval'ed to a number"
-    try (return eval(expr), eval(expr)) catch; nothing end # works if expr is a number
+    try (return Core.eval(Main,expr), Core.eval(Main,expr)) catch; nothing end # works if expr is a number
     @debug "testing if $expr is a symbol"
     expr isa Symbol ? (return range_dict[expr]) : nothing
 
@@ -401,9 +401,9 @@ function find_affine_range(expr, range_dict)
     if length(all_vars) == 1
         a, b = range_dict[all_vars[1]]
         expr_copy = copy(expr)
-        c = eval(substitute!(expr_copy, all_vars[1], a))
+        c = Core.eval(Main,substitute!(expr_copy, all_vars[1], a))
         expr_copy = copy(expr)
-        d = eval(substitute!(expr_copy, all_vars[1], b))
+        d = Core.eval(Main,substitute!(expr_copy, all_vars[1], b))
         return min(c,d), max(c,d)
     end
 
@@ -417,14 +417,14 @@ function find_affine_range(expr, range_dict)
     elseif func == :*
         # Does this assume anything about the order of the multiplication being const*variable ?
         try
-            a = eval(expr.args[2])
+            a = Core.eval(Main,expr.args[2])
             a > 0 ? (return a*c, a*d) : return a*d, a*c
         catch
-            c = eval(expr.args[3])
+            c = Core.eval(Main,expr.args[3])
             c > 0 ? (return c*a, c*b) : (return c*b, c*a)
         end
     elseif func == :/
-        c = eval(expr.args[3])
+        c = Core.eval(Main,expr.args[3])
         c > 0 ? (return a/c, b/c) : return( b/c, a/c)
     end
 end
@@ -558,7 +558,7 @@ end
 
 function is_number(expr)
     try
-        eval(expr)
+        Core.eval(Main,expr)
         return true
     catch
         return false
