@@ -2,8 +2,8 @@ using Calculus
 using NLsolve
 using Roots
 using Interpolations
-using LaTeXStrings
-include("plot_utils.jl")
+#using LaTeXStrings
+#include("plot_utils.jl")
 
 RTOL = 1e-5
 myapprox(x,y) = abs(x-y)<RTOL  # This is defined to identify small intervals
